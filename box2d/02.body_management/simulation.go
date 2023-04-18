@@ -1,12 +1,70 @@
 package main
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/ByteArena/box2d"
-	"github.com/tidwall/sjson"
 )
+
+/*
+=====================================================================
+*/
+
+type ShapeType uint
+
+const (
+	ShapeTypeNone    ShapeType = 0
+	ShapeTypePolygon ShapeType = 1
+	ShapeTypeCircle  ShapeType = 2
+)
+
+type ParamCreateBody struct {
+	Id           string
+	PosX, PosY   float64
+	SizeX, SizeY float64
+	Density      float64
+	Friction     float64
+	Shape        ShapeType
+	Dynamic      bool
+}
+
+/*
+---------------------------------------------------------------------
+*/
+
+func CreateBody(param ParamCreateBody) *Body {
+	out := &Body{
+		ID:      param.Id,
+		Dynamic: param.Dynamic,
+	}
+
+	out.bodyDef = box2d.MakeB2BodyDef()
+	if param.Dynamic {
+		out.bodyDef.Type = box2d.B2BodyType.B2_dynamicBody
+	}
+	out.bodyDef.Position.Set(param.PosX, param.PosY)
+	dynamicBox := box2d.MakeB2PolygonShape()
+	dynamicBox.SetAsBox(param.SizeX/2, param.SizeY/2)
+
+	out.fixtureDef = box2d.MakeB2FixtureDef()
+	out.fixtureDef.Shape = &dynamicBox
+	out.fixtureDef.Density = param.Density
+	out.fixtureDef.Friction = param.Friction
+
+	return out
+}
+
+type Body struct {
+	ID         string
+	bodyDef    box2d.B2BodyDef
+	fixtureDef box2d.B2FixtureDef
+	physBody   *box2d.B2Body
+	Dynamic    bool
+}
+
+/*
+=====================================================================
+*/
 
 type RunParams struct {
 	VelocityIteration int
@@ -16,19 +74,31 @@ type RunParams struct {
 	OutputFilename    string
 }
 
-type Body struct {
-	Id       string
-	physBody *box2d.B2Body
-}
+/*
+---------------------------------------------------------------------
+*/
 
 type World struct {
-	Id            string
+	ID            string
 	physWorld     box2d.B2World
 	DynamicBodies []*Body
+	StaticBodies  []*Body
 }
 
-func (w *World) Run(params RunParams) *string {
-	out, _ := sjson.Set("", "world_id", w.Id)
+func (w *World) AddBody(body *Body) {
+	b := w.physWorld.CreateBody(&body.bodyDef)
+	b.CreateFixtureFromDef(&body.fixtureDef)
+	body.physBody = b
+
+	if body.Dynamic {
+		w.DynamicBodies = append(w.DynamicBodies, body)
+	} else {
+		w.StaticBodies = append(w.StaticBodies, body)
+	}
+}
+
+func (w *World) Run(params RunParams) *Scene {
+	scene := CreateScene(w.ID)
 	for i := time.Duration(0); i < params.Duration; i++ {
 		w.physWorld.Step(params.StepTime, params.VelocityIteration, params.PositionIteration)
 		for _, dynBody := range w.DynamicBodies {
@@ -37,13 +107,9 @@ func (w *World) Run(params RunParams) *string {
 			}
 			position := dynBody.physBody.GetPosition()
 			angle := dynBody.physBody.GetAngle()
-			data := map[string]float64{
-				"x":     position.X,
-				"y":     position.Y,
-				"angle": angle,
-			}
-			sjson.Set(out, fmt.Sprintf("steps.-1.%s", dynBody.Id), data)
+			component := scene.AddComponent(dynBody.ID)
+			component.AddPositionWithAngle(position.X, position.Y, angle)
 		}
 	}
-	return &out
+	return scene
 }
