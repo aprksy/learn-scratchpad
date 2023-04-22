@@ -1,5 +1,11 @@
 package main
 
+import (
+	"encoding/json"
+	"fmt"
+	"os"
+)
+
 type PositionWithAngle struct {
 	X     float64
 	Y     float64
@@ -10,20 +16,10 @@ type PositionWithAngle struct {
 =====================================================================
 */
 
-func CreateComponent(id string) *Component {
-	return &Component{
-		ID:        id,
-		Positions: []*PositionWithAngle{},
-	}
-}
+type Frame map[string]*PositionWithAngle
 
-type Component struct {
-	ID        string
-	Positions []*PositionWithAngle
-}
-
-func (c *Component) AddPositionWithAngle(x, y, theta float64) {
-	c.Positions = append(c.Positions, &PositionWithAngle{x, y, theta})
+func (f Frame) AddPositionWithAngle(id string, x, y, theta float64) {
+	f[id] = &PositionWithAngle{x, y, theta}
 }
 
 /*
@@ -32,18 +28,26 @@ func (c *Component) AddPositionWithAngle(x, y, theta float64) {
 
 func CreateScene(id string) *Scene {
 	return &Scene{
-		ID:         id,
-		Components: []*Component{},
+		ID:     id,
+		Frames: []Frame{},
 	}
 }
 
 type Scene struct {
-	ID         string
-	Components []*Component
+	ID     string  `json:"id"`
+	Frames []Frame `json:"frames"`
 }
 
-func (s *Scene) AddComponent(id string) *Component {
-	out := CreateComponent(id)
-	s.Components = append(s.Components, out)
-	return out
+func (s *Scene) AddFrameForSingleObject(id string, x, y, theta float64) {
+	frame := Frame{}
+	frame.AddPositionWithAngle(id, x, y, theta)
+	s.Frames = append(s.Frames, frame)
+}
+
+func (s *Scene) WriteToFile(fn string) {
+	data, _ := json.Marshal(s)
+	err := os.WriteFile(fn, data, 0644)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 }

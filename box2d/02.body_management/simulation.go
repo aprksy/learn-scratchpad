@@ -1,8 +1,6 @@
 package main
 
 import (
-	"time"
-
 	"github.com/ByteArena/box2d"
 )
 
@@ -39,17 +37,19 @@ func CreateBody(param ParamCreateBody) *Body {
 	}
 
 	out.bodyDef = box2d.MakeB2BodyDef()
-	if param.Dynamic {
-		out.bodyDef.Type = box2d.B2BodyType.B2_dynamicBody
-	}
-	out.bodyDef.Position.Set(param.PosX, param.PosY)
 	dynamicBox := box2d.MakeB2PolygonShape()
 	dynamicBox.SetAsBox(param.SizeX/2, param.SizeY/2)
 
 	out.fixtureDef = box2d.MakeB2FixtureDef()
-	out.fixtureDef.Shape = &dynamicBox
-	out.fixtureDef.Density = param.Density
 	out.fixtureDef.Friction = param.Friction
+	out.fixtureDef.Shape = &dynamicBox
+	out.fixtureDef.Density = 0.0
+
+	if param.Dynamic {
+		out.bodyDef.Type = box2d.B2BodyType.B2_dynamicBody
+		out.fixtureDef.Density = param.Density
+	}
+	out.bodyDef.Position.Set(param.PosX, param.PosY)
 
 	return out
 }
@@ -66,17 +66,34 @@ type Body struct {
 =====================================================================
 */
 
-type RunParams struct {
+type ParamRunWorld struct {
 	VelocityIteration int
 	PositionIteration int
 	StepTime          float64
-	Duration          time.Duration
-	OutputFilename    string
+	FrameLength       uint
+}
+
+type ParamCreateWorld struct {
+	ID       string
+	GravityX float64
+	GravityY float64
 }
 
 /*
 ---------------------------------------------------------------------
 */
+
+func CreateWorld(param ParamCreateWorld) *World {
+	return &World{
+		ID: param.ID,
+		physWorld: box2d.MakeB2World(box2d.B2Vec2{
+			X: param.GravityX,
+			Y: param.GravityY,
+		}),
+		DynamicBodies: []*Body{},
+		StaticBodies:  []*Body{},
+	}
+}
 
 type World struct {
 	ID            string
@@ -97,9 +114,8 @@ func (w *World) AddBody(body *Body) {
 	}
 }
 
-func (w *World) Run(params RunParams) *Scene {
-	scene := CreateScene(w.ID)
-	for i := time.Duration(0); i < params.Duration; i++ {
+func (w *World) Run(params ParamRunWorld, scene *Scene) {
+	for i := 0; i < int(params.FrameLength); i++ {
 		w.physWorld.Step(params.StepTime, params.VelocityIteration, params.PositionIteration)
 		for _, dynBody := range w.DynamicBodies {
 			if dynBody.physBody == nil {
@@ -107,9 +123,9 @@ func (w *World) Run(params RunParams) *Scene {
 			}
 			position := dynBody.physBody.GetPosition()
 			angle := dynBody.physBody.GetAngle()
-			component := scene.AddComponent(dynBody.ID)
-			component.AddPositionWithAngle(position.X, position.Y, angle)
+			if scene != nil {
+				scene.AddFrameForSingleObject(dynBody.ID, position.X, position.Y, angle)
+			}
 		}
 	}
-	return scene
 }
