@@ -49,22 +49,17 @@ type ParamCreateBody struct {
 }
 
 func (p *ParamCreateBody) UnmarshalJSON(data []byte) error {
-	var v map[string]interface{}
-	err := json.Unmarshal(data, &v)
-	if err != nil {
+	type Alias ParamCreateBody
+	aux := &struct {
+		Shape string `json:"shape_type"`
+		*Alias
+	}{
+		Alias: (*Alias)(p),
+	}
+	if err := json.Unmarshal(data, &aux); err != nil {
 		return err
 	}
-
-	p.ID = v["id"].(string)
-	p.PosX = v["pos_x"].(float64)
-	p.PosY = v["pos_y"].(float64)
-	p.SizeX = v["size_x"].(float64)
-	p.SizeY = v["size_y"].(float64)
-	p.Density = v["density"].(float64)
-	p.Friction = v["friction"].(float64)
-	p.Shape = ShapeTypeValues[v["shape_type"].(string)]
-	p.Dynamic = v["dynamic"].(bool)
-
+	p.Shape = ShapeTypeValues[aux.Shape]
 	return nil
 }
 

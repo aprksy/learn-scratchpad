@@ -1,0 +1,43 @@
+{
+    "create_param": {
+        "id": "world",
+        "gravity_x": 0.0,
+        "gravity_y": -10.0
+    },
+    "run_param": {
+        "velocity_iteration": 6,
+        "position_iteration": 2,
+        "step_time": 0.016667,
+        "frame_length": 60
+    },
+    "bodies": [
+        {
+            "id": "ground_box",
+            "pos_x": 0.0,
+            "pos_y": -10.0,
+            "size_x": 100.0,
+            "size_y": 20.0,
+            "density": 0.0,
+            "friction": 0.0,
+            "shape_type": "polygon",
+            "dynamic": false
+        },
+        {
+            "id": "simple_box",
+            "pos_x": 0.0,
+            "pos_y": 4.0,
+            "size_x": 1.0,
+            "size_y": 1.0,
+            "density": 1.0,
+            "friction": 0.3,
+            "shape_type": "polygon",
+            "dynamic": true
+        }
+    ],
+    "static_body_ids": [
+        "ground_box"
+    ],
+    "dynamic_body_ids": [
+        "simple_box"
+    ]
+}

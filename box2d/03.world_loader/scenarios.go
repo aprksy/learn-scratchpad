@@ -1,57 +1,89 @@
 package main
 
-var (
-	world_paramCreateWorld = ParamCreateWorld{
-		ID:       "world",
-		GravityX: 0.0,
-		GravityY: -10.0,
-	}
-
-	world_paramRunWorld = ParamRunWorld{
-		VelocityIteration: 6,
-		PositionIteration: 2,
-		StepTime:          1.0 / 60.0,
-		FrameLength:       uint(60),
-	}
-
-	groundBox_paramCreateBody = ParamCreateBody{
-		ID:       "ground_box",
-		PosX:     0.0,
-		PosY:     -10.0,
-		SizeX:    100.0,
-		SizeY:    20.0,
-		Density:  0.0,
-		Friction: 0.0,
-		Shape:    ShapeTypeValueCircle,
-		Dynamic:  false,
-	}
-
-	simpleBox_paramCreateBody = ParamCreateBody{
-		ID:       "simple_box",
-		PosX:     0.0,
-		PosY:     4.0,
-		SizeX:    1.0,
-		SizeY:    1.0,
-		Density:  1.0,
-		Friction: 0.3,
-		Shape:    ShapeTypeValuePolygon,
-		Dynamic:  true,
-	}
+import (
+	"encoding/json"
+	"fmt"
+	"os"
+	"path/filepath"
 )
 
-func simpleBox_falldown() {
-	// scene
-	scene := CreateScene("scene")
+type Scenario struct {
+	Name        string
+	Description string
+	Action      func() error
+}
 
-	// physics
-	world := CreateWorld(world_paramCreateWorld)
-	groundBox := CreateBody(groundBox_paramCreateBody)
-	simpleBox := CreateBody(simpleBox_paramCreateBody)
+var scenarios = []Scenario{}
 
-	world.AddBody(groundBox)
-	world.AddBody(simpleBox)
-	world.Run(world_paramRunWorld, scene)
+func init() {
+	scenarios = append(scenarios, Scenario{
+		Name:   "Scenario - 1",
+		Action: scenario1,
+	})
+	scenarios = append(scenarios, Scenario{
+		Name:   "Scenario - 2",
+		Action: scenario2,
+	})
+}
 
-	// write output
-	scene.WriteToFile("out.json")
+func scenario1() error {
+	fmt.Printf("\nexecuting scenario - 1:\n")
+	scenarioPath := "scenario-1"
+	infile := filepath.Join(scenarioPath, "in.worldcfg.json")
+	outfile := filepath.Join(scenarioPath, "out.worldcfg.json")
+
+	var worldCfg WorldConfig
+	fmt.Printf("  loading file '%s'\n", infile)
+	worldCfgData, err := os.ReadFile(infile)
+	if err != nil {
+		return err
+	}
+
+	// try loading the configuration
+	fmt.Printf("  unmarshalling to world data\n")
+	err = json.Unmarshal(worldCfgData, &worldCfg)
+	if err != nil {
+		return err
+	}
+
+	// try saving the configuration
+	fmt.Printf("  re-marshalling to world data\n")
+	out, err := json.Marshal(&worldCfg)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("  saving data to '%s'\n", outfile)
+	os.WriteFile(outfile, out, 0644)
+	fmt.Printf("  scenario - 1 finished\n")
+	return nil
+}
+
+func scenario2() error {
+	fmt.Printf("\nexecuting scenario - 2:\n")
+	scenarioPath := "scenario-2"
+	infile := filepath.Join(scenarioPath, "in.worldcfg.json")
+	outfile := filepath.Join(scenarioPath, "out.position.json")
+
+	var worldCfg WorldConfig
+	fmt.Printf("  loading file '%s'\n", infile)
+	worldCfgData, err := os.ReadFile(infile)
+	if err != nil {
+		return err
+	}
+
+	// try loading the configuration
+	fmt.Printf("  unmarshalling to world data\n")
+	err = json.Unmarshal(worldCfgData, &worldCfg)
+	if err != nil {
+		return err
+	}
+
+	// try saving the configuration
+	fmt.Printf("  building & run world\n")
+	scene := worldCfg.RunWorld("scene")
+
+	fmt.Printf("  saving result to '%s'\n", outfile)
+	scene.WriteToFile(outfile)
+	fmt.Printf("  scenario - 2 finished\n")
+	return nil
 }
