@@ -10,15 +10,18 @@ function evaluate(formula, scope) {
     return formula.evaluate(scope)
 }
 
+// Get the command-line arguments
+const args = process.argv.slice(2);
+
+let rowId = args[0];
+
+if (isNaN(rowId) || rowId < 0) {
+  rowId = 0;
+}
+
 let dataFile = "data.json";
 let pricingFile = "pricing-scheme.json";
 let columnMappingFile = "column-mapping.json";
-
-let itemId = 0;
-// let pricingScheme = "normal_price";
-// let pricingScheme = "regular_discount";
-// let pricingScheme = "flash_sale";
-// let pricingScheme = "super_sale";
 
 let dataContent;
 try {
@@ -41,7 +44,7 @@ try {
     console.error(error)
 }
 
-let data = JSON.parse(dataContent)["data"][itemId];
+let data = JSON.parse(dataContent)["data"][rowId];
 let columnMapping = JSON.parse(columnMappingContent);
 
 let schemes = [
@@ -60,6 +63,7 @@ for (const [variable, column] of Object.entries(columnMapping)) {
 }
 
 // evaluate formulas
+console.log(`item name: ${data.name}`)
 for (const [scheme, formulaStr] of Object.entries(formulaStrs)) {
     let formula = defineFormula(formulaStr);
     let result = evaluate(formula, scope);

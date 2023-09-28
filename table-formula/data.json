@@ -11,5 +11,27 @@
         "flash_sale_discount": 0.4,
         "super_sale_price_markup": 0.7,
         "super_sale_discount": 0.5
+    }, {
+        "id": 2,
+        "name": "Orbital Sander",
+        "base_price": 250000,
+        "profit_margin": 0.2,
+        "regular_price_markup": 0.3,
+        "regular_discount": 0.2,
+        "flash_sale_price_markup": 0.5,
+        "flash_sale_discount": 0.4,
+        "super_sale_price_markup": 0.7,
+        "super_sale_discount": 0.5
+    }, {
+        "id": 1,
+        "name": "Jigsaw",
+        "base_price": 400000,
+        "profit_margin": 0.2,
+        "regular_price_markup": 0.3,
+        "regular_discount": 0.2,
+        "flash_sale_price_markup": 0.5,
+        "flash_sale_discount": 0.4,
+        "super_sale_price_markup": 0.7,
+        "super_sale_discount": 0.5
     }]
 }
