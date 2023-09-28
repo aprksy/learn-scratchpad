@@ -1,14 +1,5 @@
-// Import the math.js library
-const math = require('mathjs');
 const fs = require('fs');
-
-function defineFormula(mathExpression) {
-    return math.parse(mathExpression).compile()
-}
-
-function evaluate(formula, scope) {
-    return formula.evaluate(scope)
-}
+const modformula = require('./modformula.js');
 
 // Get the command-line arguments
 const args = process.argv.slice(2);
@@ -65,8 +56,8 @@ for (const [variable, column] of Object.entries(columnMapping)) {
 // evaluate formulas
 console.log(`item name: ${data.name}`)
 for (const [scheme, formulaStr] of Object.entries(formulaStrs)) {
-    let formula = defineFormula(formulaStr);
-    let result = evaluate(formula, scope);
+    let formula = modformula.defineFormula(formulaStr);
+    let result = modformula.evaluate(formula, scope);
     console.log(`${scheme}: ${result}; profit: ${result - scope["A"]}`);
 }
 
