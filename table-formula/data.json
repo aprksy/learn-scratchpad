@@ -1,0 +1,15 @@
+{
+    "table_name": "item_pricing",
+    "data": [{
+        "id": 1,
+        "name": "Circular Saw 7inch",
+        "base_price": 600000,
+        "profit_margin": 0.2,
+        "regular_price_markup": 0.3,
+        "regular_discount": 0.2,
+        "flash_sale_price_markup": 0.5,
+        "flash_sale_discount": 0.4,
+        "super_sale_price_markup": 0.7,
+        "super_sale_discount": 0.5
+    }]
+}

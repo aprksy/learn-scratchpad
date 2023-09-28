@@ -1,0 +1,10 @@
+{
+    "A": "base_price",
+    "B": "profit_margin",
+    "C": "regular_price_markup",
+    "D": "regular_discount",
+    "E": "flash_sale_price_markup",
+    "F": "flash_sale_discount",
+    "G": "super_sale_price_markup",
+    "H": "super_sale_discount"
+}

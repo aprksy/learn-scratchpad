@@ -1,0 +1,6 @@
+{
+    "normal_price": "A * (1 + B)",
+    "regular_discount": "A * (1 + B) * (1 + C) * (1 - D)",
+    "flash_sale": "A * (1 + B) * (1 + E) * (1 - F)",
+    "super_sale": "A * (1 + B) * (1 + G) * (1 - H)"
+}
